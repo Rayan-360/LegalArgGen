@@ -1,7 +1,8 @@
 import {Mona_Sans } from "next/font/google";
-import "./globals.css";
 import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/lib/ThemeContext";
+import Footer from "@/components/footer";
+import "../globals.css";
 
 const mona = Mona_Sans({
   subsets:["latin"],
@@ -26,7 +27,7 @@ export default function RootLayout({ children }) {
               {children}
         </main>
         <footer>
-
+          <Footer/>
         </footer>
       </ThemeProvider>
       </body>

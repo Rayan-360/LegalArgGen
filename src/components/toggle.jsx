@@ -22,8 +22,8 @@ export default function ThemeButton() {
                 className={`inline-block transition-transform duration-200 ${isAnimating ? "rotate-180 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`}
             >
                 {theme === 'light' 
-                    ? <i className="ri-sun-line"></i> 
-                    : <i className="ri-moon-fill"></i>}
+                    ? <i className="ri-moon-fill"></i> 
+                    : <i className="ri-sun-line"></i>}
             </span>
         </button>
     );

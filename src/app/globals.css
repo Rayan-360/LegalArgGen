@@ -1,3 +1,16 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @import 'remixicon/fonts/remixicon.css';
+
+button{
+    @apply cursor-pointer
+}
+
+@layer components{
+    .input-box{
+        @apply flex items-center w-full
+    }
+    .input-box input{
+        @apply px-3 py-2 border-1 border-gray-500 pl-8 w-full rounded-md dark:bg-[#161618] text-sm
+    }
+}
