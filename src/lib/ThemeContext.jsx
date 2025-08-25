@@ -15,7 +15,7 @@ export function ThemeProvider({children}){
         else{
             document.documentElement.classList.remove('dark');
         }
-        console.log("ThemeProvider mounted");
+        // console.log("ThemeProvider mounted");
     },[]);
 
     const toggleTheme = () => {

@@ -1,38 +1,61 @@
 "use client"
+import { LoginForm } from "@/actions/auth";
+import { LoginFormSchema } from "@/lib/rules";
 import { useTheme } from "@/lib/ThemeContext";
 import Image from "next/image";
 import Link from "next/link";
+import { useActionState } from "react";
+import { supabase } from "@/lib/supabase-client";
 
 export default function Login(){
 
     const{theme} = useTheme();
+    const[state,action,isLoading] = useActionState(LoginForm,undefined);
+
+    async function handleGoogleSignIn(){
+        const {data,error} = await supabase.auth.signInWithOAuth({
+            provider:"google",
+              options: {
+                redirectTo: `${window.location.origin}/callback`
+            }
+        })
+        if(error){
+            toast.error(error.message);
+        }
+    }
     return (
+        <>
         <div className="h-screen flex items-center justify-center bg-gray-100 dark:bg-[#161618] dark:text-white">
             <div className="p-10 mx-auto rounded-lg shadow-lg bg-white dark:bg-[#242628] w-96 md:w-[450px]">
                 <div className="w-full flex items-center justify-center mb-2">
                     <Image src={`${theme === 'dark' ? "/scales_logo_light.svg":"/scales_logo_dark.svg"}`} width={100} height={100} alt="main_logo"/>
                 </div>
                 <h2 className="dark:text-white text-black font-semibold text-3xl text-center">Welcome Back</h2>
-                <form action="" className="mt-4 space-y-4">
+                <form action={action} className="mt-4 space-y-4">
                     <p className="dark:text-slate-400 text-slate-600 text-center text-[14px]">Don't have an Account yet? <span className="font-semibold text-slate-800 dark:text-white"><Link href="/signup">Sign Up</Link></span></p>
                     <div className="input-box relative space-x-2">
-                        <i class="ri-mail-line absolute left-3 text-gray-500"></i>
-                        <input type="text" placeholder="email address" id="email"/>
+                        <i className="ri-mail-line absolute left-2 top-1.5 text-gray-500"></i>
+                        <input type="text" placeholder="email address" name="email"/>
+                        {state?.errors?.email && 
+                            <p className="error w-full flex justify-start">{state.errors.email}</p>}
                     </div>
                     <div className="input-box relative space-x-2">
-                        <i className="ri-lock-line absolute left-3 text-gray-500"></i>
-                        <input type="password" placeholder="Password" id="pass"/>
+                        <i className="ri-lock-line absolute left-2 top-1.5 text-gray-500"></i>
+                        <input type="password" placeholder="Password" name="pass"/>
+                        {state?.errors?.password && 
+                            <p className="error w-full flex justify-start">{state.errors.password}</p>}
                     </div>
-                    <button className="bg-[#0072DB] hover:bg-blue-500 transition ease-in-out duration-300 text-sm font-semibold text-white px-3 py-2 rounded-md w-full ">Login</button>
+                    <button className="bg-[#0072DB] hover:bg-blue-500 transition ease-in-out duration-300 text-sm font-semibold text-white px-3 py-2 rounded-md w-full " disabled={isLoading}>{isLoading ? "Loading..." : "Login"}</button>
                 </form>
                 <div className="flex items-center my-4 gap-2">
                     <hr className="flex-grow border-gray-300 border-t"/>
                     <span className="text-sm text-gray-500">OR</span>
                     <hr className="flex-grow border-gray-300 border-t"/>
                 </div>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 text-black text-sm dark:text-white shadow-sm w-full dark:bg-[#202224] dark:hover:bg-[hsl(210,10%,13%)] rounded-md border-1 border-slate-400 hover:bg-slate-50 transition ease-in-out duration-300 text-nowrap font-semibold"><Image width={15} height={15} alt="glogo" src="/google-icon-logo.svg"/><span>Continue with Google</span> </button>
+                <button className="flex items-center justify-center gap-2 px-3 py-2 text-black text-sm dark:text-white shadow-sm w-full dark:bg-[#202224] dark:hover:bg-[hsl(210,10%,13%)] rounded-md border-1 border-slate-400 hover:bg-slate-50 transition ease-in-out duration-300 text-nowrap font-semibold" onClick={handleGoogleSignIn}><Image width={15} height={15} alt="glogo" src="/google-icon-logo.svg"/><span>Continue with Google</span> </button>
 
             </div>
         </div>
+        </>
     )
 }

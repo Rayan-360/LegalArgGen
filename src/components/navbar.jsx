@@ -34,7 +34,7 @@ export default function Navbar() {
         </div>
 
         <div>
-          <ul className="md:flex space-x-6 hidden">
+          <ul className="lg:flex space-x-6 hidden">
             <li>
               <NavLink href="/" label="Home" />
             </li>

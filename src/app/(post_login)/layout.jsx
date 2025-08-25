@@ -1,7 +1,7 @@
 import {Mona_Sans } from "next/font/google";
-import "../globals.css";
 import { ThemeProvider } from "@/lib/ThemeContext";
-import { Toaster } from "react-hot-toast";
+import "../globals.css";
+
 const mona = Mona_Sans({
   subsets:["latin"],
 })
@@ -11,7 +11,7 @@ export const metadata = {
   description: "Legal arguement generator",
 };
 
-export default function AuthLayout({ children }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
@@ -20,7 +20,6 @@ export default function AuthLayout({ children }) {
       <ThemeProvider>
         <main>
               {children}
-              <Toaster position="top-center"/>
         </main>
       </ThemeProvider>
       </body>
