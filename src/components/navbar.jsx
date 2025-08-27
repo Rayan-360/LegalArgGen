@@ -51,12 +51,15 @@ export default function Navbar() {
         </div>
 
         <div className="flex flex-row space-x-6 items-center justify-center">
-            <Link href="/login" className="font-semibold hidden md:block text-nowrap">Sign in</Link>
-            <i className="ri-menu-line md:hidden flex cursor-pointer"></i>
-            <button className="hidden md:block dark:bg-[#161618] bg-black hover:bg-[#161618] text-white px-6 py-3 rounded-full dark:hover:bg-black cursor-pointer transition dark:border-1 dark:border-white">
-              Get Started
+            {/* Hamburger menu  */}
+            <div className="block lg:hidden"><ThemeButton/></div>
+            <i className="ri-menu-line lg:hidden flex cursor-pointer text-xl"></i>
+
+            <Link href="/login" className="font-semibold hidden lg:block text-nowrap">Sign in</Link>
+            <button className="hidden lg:block dark:bg-[#161618] bg-black hover:bg-[#161618] text-white px-6 py-3 rounded-full dark:hover:bg-black cursor-pointer transition dark:border-1 dark:border-white">
+              <Link href="/signup">Get Started</Link>
             </button>
-            <div className="hidden md:block"><ThemeButton/></div>
+            <div className="hidden lg:block"><ThemeButton/></div>
         </div>
       </div>
     </nav>

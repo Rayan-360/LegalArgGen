@@ -1,6 +1,7 @@
 import {Mona_Sans } from "next/font/google";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import "../globals.css";
+import { AuthProvider } from "@/lib/AuthContext";
 
 const mona = Mona_Sans({
   subsets:["latin"],
@@ -18,9 +19,11 @@ export default function RootLayout({ children }) {
         className={`${mona.className} `}
       >
       <ThemeProvider>
-        <main>
-              {children}
-        </main>
+        <AuthProvider>
+          <main>
+                {children}
+          </main>
+        </AuthProvider>
       </ThemeProvider>
       </body>
     </html>

@@ -1,10 +1,11 @@
 "use server"
 import { LoginFormSchema,SignUpFormSchema } from "@/lib/rules"
-import { supabase } from "@/lib/supabase-client";
+import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import * as z from "zod"
 
 export async function SignUpForm(state,formData){
+    const supabase = await createSupabaseServer();
     const validatedFields = SignUpFormSchema.safeParse({
         name : formData.get('name'),
         email : formData.get('email'),
@@ -30,6 +31,7 @@ export async function SignUpForm(state,formData){
             data : {
                 name : name,
             },
+            emailRedirectTo: "http://localhost:3000/dashboard",
         },
     })
 
@@ -54,6 +56,7 @@ export async function SignUpForm(state,formData){
 }
 
 export async function LoginForm(state,formData){
+    const supabase = await createSupabaseServer();
     const validatedFields = LoginFormSchema.safeParse({
         email : formData.get('email'),
         password : formData.get('pass')
@@ -82,4 +85,13 @@ export async function LoginForm(state,formData){
 
     redirect('/dashboard');
 
+}
+
+export async function Logout(){
+    const supabase = await createSupabaseServer();
+    const {error} = await supabase.auth.signOut();
+    if(error){
+        console.log("Error logging out : ",error);
+    }
+    redirect('/');
 }

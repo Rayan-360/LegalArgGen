@@ -3,6 +3,7 @@ import Navbar from "@/components/navbar";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import Footer from "@/components/footer";
 import "../globals.css";
+import { AuthProvider } from "@/lib/AuthContext";
 
 const mona = Mona_Sans({
   subsets:["latin"],
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
         className={`${mona.className} `}
       >
       <ThemeProvider>
+        <AuthProvider>
         <header>
             <Navbar/>
         </header>
@@ -29,6 +31,7 @@ export default function RootLayout({ children }) {
         <footer>
           <Footer/>
         </footer>
+        </AuthProvider>
       </ThemeProvider>
       </body>
     </html>
