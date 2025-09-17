@@ -1,6 +1,5 @@
 "use client"
 import { LoginForm } from "@/actions/auth";
-import { LoginFormSchema } from "@/lib/rules";
 import { useTheme } from "@/lib/ThemeContext";
 import Image from "next/image";
 import Link from "next/link";

@@ -6,9 +6,6 @@
 button{
     @apply cursor-pointer
 }
-.about-img{
-    
-}
 
 @layer components{
     .input-box{
