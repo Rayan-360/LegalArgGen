@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LogoImg from "./logoimg";
 
-export default function Sidebar() {
+export default function Sidebar({chats,activeChat,setActiveChat,user}) {
   const [isOpen, setIsOpen] = useState(true);
 
   const handleSidebar = () => {
     setIsOpen((prev) => !prev);
   };
 
+  
 
 
   return (
@@ -30,21 +31,41 @@ export default function Sidebar() {
               className={`flex items-center h-10  rounded-lg dark:hover:bg-[#28282A] hover:bg-[#bcbcbc] cursor-pointer transition mx-3 ${
                 isOpen ? "justify-start gap-3 px-3" : "justify-center w-10"
               }`}
+              onClick={()=>setActiveChat(null)}
             >
               <i className="ri-edit-box-line text-black dark:text-white text-xl"></i>
               {isOpen && <span className="text-sm text-black dark:text-white whitespace-nowrap">New Chat</span>}
             </div>
 
             {/* Chat History */}
-            <div
-              className={`flex items-center  h-10 rounded-lg dark:hover:bg-[#28282A] hover:bg-[#bcbcbc] cursor-pointer transition mx-3 ${
-                isOpen ? "justify-start gap-3 px-3" : "justify-center w-10"
-              }`}
-            >
-              <i className="ri-history-line text-black dark:text-white text-xl"></i>
-              {isOpen && (
-                <span className="text-sm text-black dark:text-white whitespace-nowrap">Chat History</span>
-              )}
+            <div>
+              <div
+                className={`flex items-center  h-10 rounded-lg dark:hover:bg-[#28282A] hover:bg-[#bcbcbc] cursor-pointer transition mx-3 ${
+                  isOpen ? "justify-start gap-3 px-3" : "justify-center w-10"
+                }`}
+              >
+                <i className="ri-history-line text-black dark:text-white text-xl"></i>
+                {isOpen && (
+                  <span className="text-sm text-black dark:text-white whitespace-nowrap">Chat History</span>
+                )}
+              </div>
+
+            {/* Only render chat history if sidebar is open */}
+            {isOpen && (
+              <div className="flex flex-col gap-1 mt-2">
+                {chats.map((chat, index) => (
+                  <div
+                    key={chat._id}
+                    className={`group flex items-center justify-between h-10 rounded-lg dark:hover:bg-[#28282A] hover:bg-[#bcbcbc] cursor-pointer transition mx-3 px-3
+                                ${activeChat?._id === chat._id ? "dark:bg-[#303030] bg-[#a5a5a4]":""}`}
+                    onClick={()=> setActiveChat(chat)}
+                  >
+                    <span className="text-sm text-black dark:text-white truncate text-nowrap">{chat.title}</span>
+                    <i className="ri-more-fill text-black dark:text-white opacity-0 group-hover:opacity-100 transition-opacity text-xl"></i>
+                  </div>
+                ))}
+              </div>
+            )}
             </div>
           </div>
 
