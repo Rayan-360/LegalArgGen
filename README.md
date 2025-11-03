@@ -123,6 +123,24 @@ Make sure the backend is running and reachable at `BACKEND_PIPELINE_URL`. See `.
 - HF classify errors
   - Ensure `HF_API_KEY` is set.
 
+### OAuth redirects (localhost vs Vercel)
+
+If Google sign‑in sends you to `http://localhost:3000/...` when deployed, update Supabase Auth settings:
+
+1. In Supabase → Project Settings → Auth → URL Configuration:
+
+   - Site URL: `https://legal-arg-gen.vercel.app` (for production)
+   - Additional Redirect URLs (one per line):
+     - `http://localhost:3000/callback`
+     - `https://legal-arg-gen.vercel.app/callback`
+
+2. In Vercel → Project → Settings → Environment Variables, set:
+
+   - `NEXT_PUBLIC_SUPABASE_PUBLIC_URL`
+   - `NEXT_PUBLIC_SUPABASE_API_KEY`
+
+3. The app initiates OAuth with `redirectTo = <origin>/callback` and the callback route exchanges the code for a session. This works for both localhost and production as long as the URLs above are allowed.
+
 ---
 
 ## Production notes
@@ -139,4 +157,5 @@ This project is provided as‑is for internal use. Review and adapt before comme
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 # LegalArgGen Backend (Flask)
+
 for backend refer the repository: https://github.com/Rayan-360/LegalArgGen_Backend

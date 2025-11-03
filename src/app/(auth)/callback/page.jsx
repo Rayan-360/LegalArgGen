@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
@@ -8,16 +8,34 @@ export default function OAuthCallback() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const error = searchParams.get("error");
-    if (error) {
-      router.push("/login"); // canceled login → back to login
-      return;
-    }
+    const run = async () => {
+      const error = searchParams.get("error");
+      if (error) {
+        router.replace("/login"); // canceled or failed → back to login
+        return;
+      }
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.push("/dashboard"); // success → dashboard
-      else router.push("/login"); // fallback
-    });
+      // If we have an OAuth code, exchange it for a session
+      const code = searchParams.get("code");
+      if (code) {
+        const { error: exErr } = await supabase.auth.exchangeCodeForSession({
+          code,
+        });
+        if (exErr) {
+          router.replace("/login");
+          return;
+        }
+        router.replace("/dashboard");
+        return;
+      }
+
+      // Fallback: check if a session already exists (e.g., refresh)
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) router.replace("/dashboard");
+      else router.replace("/login");
+    };
+
+    run();
   }, [router, searchParams]);
 
   return null; // nothing to render, instantly redirects
