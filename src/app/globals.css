@@ -18,3 +18,37 @@ button{
         @apply text-xs text-red-500 mt-1 
     }
 }
+
+/* Global scrollbar styling (matches light/dark theme) */
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 100, 100, 0.35) transparent;
+}
+.dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.35);
+    border-radius: 9999px; /* fully rounded */
+    border: 2px solid transparent; /* creates spacing around thumb */
+    background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(100, 100, 100, 0.55);
+}
+.dark *::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.30);
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.50);
+}

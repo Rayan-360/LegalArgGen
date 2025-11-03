@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import LogoImg from "@/components/logoimg";
 import Sidebar from "@/components/sidebar";
 import { useAuth } from "@/lib/AuthContext";
@@ -8,100 +8,152 @@ import { useEffect, useRef, useState } from "react";
 import ChatInput from "@/components/chatinput";
 import { fetchAllChats } from "@/actions/chats";
 
-
 export default function DashBoard() {
+  const [open, setOpen] = useState(false);
+  const [chats, setChats] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
-    const [open,setOpen] = useState(false);
-    const [chats,setChats] = useState([]);
-    const [activeChat, setActiveChat] = useState(null);
+  const { user } = useAuth();
+  // const userId = user?.id;
 
-    const { user } = useAuth();
-    // const userId = user?.id;
-    
+  const dropdownRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-    const dropdownRef = useRef(null);
-    useEffect(() => {
-        function handleClickOutside(e){
-            if(dropdownRef.current && !dropdownRef.current.contains(e.target)){
-                setOpen(false);
-            }
-        }
-        document.addEventListener('mousedown',handleClickOutside);
-        async function getChats(){
-            const chats = await fetchAllChats();
-            setChats(chats);
-        }
-        getChats();
-        return () => {
-            document.removeEventListener('mousedown',handleClickOutside);
-        }
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    async function getChats() {
+      const chats = await fetchAllChats();
+      setChats(chats);
+    }
+    getChats();
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
-    },[])
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [activeChat?.messages]);
 
+  const handleCopy = async (text, index) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+  };
 
-    
-
-    return (
-        <div className="flex h-screen w-full">
-            <Sidebar chats={chats} activeChat={activeChat} setActiveChat={setActiveChat} user={user}/>
-            <div className="flex-1 relative bg-[#F8F7F6] dark:bg-[#161618] dark:text-white">
-                
-                <div className="absolute top-4 right-4 flex gap-2" >
-                    {user && (
-                        <div className="w-10 h-10 overflow-hidden rounded-full cursor-pointer" onClick={() => setOpen((prev) => !prev)}>
-                            <Image src={user.user_metadata?.avatar_url || "/user.png"} alt="avatar" width={40} height={40} className="object-cover w-full h-full"/>
-                        </div>
-
-                    )}
-                </div>
-
-                <div className="absolute top-16 right-4 z-50" ref={dropdownRef}>
-                    {open && <UserProfile/>}
-                </div>
-                <div className="flex h-full flex-col">
-                    {activeChat ? (
-                        
-                        <div className="flex flex-col h-full justify-between">
-                            <div className="flex-1 overflow-y-auto px-10 py-6 space-y-4 flex justify-center mb-2">
-                                <div className="w-full max-w-[850px] px-6 space-y-4">
-                                    {activeChat.messages.map((msg,idx) => (
-                                        <div
-                                            key={idx}
-                                            className={`flex ${msg.sender === 'user'?'justify-end':'justify-start'}`}>
-                                                <div className={`px-4 py-4 rounded-2xl max-w-[80%] whitespace-pre-wrap break-words ${msg.sender === 'user' ? 'bg-[#e9e7e5] dark:bg-[#2F2F2F]':""}`}>
-                                                    {msg.text}
-                                                </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="w-full flex justify-center mb-4">
-                                <div className="">
-                                    <ChatInput
-                                    activeChat={activeChat}
-                                    setActiveChat={setActiveChat}
-                                    setChats={setChats}
-                                    user = {user}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    ) :(
-                    <div className="flex h-full items-center justify-center">
-                        <div className="text-center">
-                            <div className="flex flex-col gap-5 items-center justify-center mb-4 ml-6 sm:ml-0">
-                                <div className="flex items-center justify-center gap-2">
-                                    <LogoImg width={70} height={70}/>
-                                    <h1 className="text-4xl font-semibold ">ArguMentor</h1>
-                                </div>
-                                <ChatInput  activeChat={activeChat} setActiveChat={setActiveChat} setChats={setChats} user = {user}/>
-                            </div>
-                        </div>
-                    </div>
-
-                    )}
-                </div>
+  return (
+    <div className="flex h-screen w-full">
+      <Sidebar
+        chats={chats}
+        activeChat={activeChat}
+        setActiveChat={setActiveChat}
+        user={user}
+        setChats={setChats}
+      />
+      <div className="flex-1 relative bg-[#F8F7F6] dark:bg-[#161618] dark:text-white">
+        <div className="absolute top-4 right-4 flex gap-2">
+          {user && (
+            <div
+              className="w-10 h-10 overflow-hidden rounded-full cursor-pointer"
+              onClick={() => setOpen((prev) => !prev)}
+            >
+              <Image
+                src={user.user_metadata?.avatar_url || "/user.png"}
+                alt="avatar"
+                width={40}
+                height={40}
+                className="object-cover w-full h-full"
+              />
             </div>
+          )}
         </div>
-    )
+
+        <div className="absolute top-16 right-4 z-50" ref={dropdownRef}>
+          {open && <UserProfile />}
+        </div>
+        <div className="flex h-full flex-col">
+          {activeChat ? (
+            <div className="flex flex-col h-full justify-between">
+              <div className="flex-1 overflow-y-auto px-10 py-6 space-y-4 flex justify-center mb-2">
+                <div className="w-full max-w-[850px] px-6 space-y-4">
+                  {activeChat.messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex flex-col ${
+                        msg.sender === "user" ? "items-end" : "items-start"
+                      }`}
+                    >
+                      <div
+                        className={`px-4 py-4 rounded-2xl max-w-[80%] whitespace-pre-wrap break-words ${
+                          msg.sender === "user"
+                            ? "bg-[#e9e7e5] dark:bg-[#2F2F2F]"
+                            : ""
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                      {/* Copy button below message */}
+                      <button
+                        onClick={() => handleCopy(msg.text, idx)}
+                        className="mt-1 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+                        title="Copy message"
+                      >
+                        {copiedIndex === idx ? (
+                          <i className="ri-check-line text-gray-600 dark:text-gray-400 text-sm"></i>
+                        ) : (
+                          <i className="ri-file-copy-line text-gray-500 dark:text-gray-400 text-sm"></i>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                  {/* Invisible anchor for auto-scroll */}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+              <div className="w-full flex justify-center mb-4">
+                <div className="">
+                  <ChatInput
+                    activeChat={activeChat}
+                    setActiveChat={setActiveChat}
+                    setChats={setChats}
+                    user={user}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <div className="flex flex-col gap-5 items-center justify-center mb-4 ml-6 sm:ml-0">
+                  <div className="flex items-center justify-center gap-2">
+                    <LogoImg width={70} height={70} />
+                    <h1 className="text-4xl font-semibold ">ArguMentor</h1>
+                  </div>
+                  <ChatInput
+                    activeChat={activeChat}
+                    setActiveChat={setActiveChat}
+                    setChats={setChats}
+                    user={user}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
