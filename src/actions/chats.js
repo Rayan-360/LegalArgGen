@@ -170,7 +170,7 @@ async function getBotResponse(message) {
         ...(classification.c3_summary ? { c3_summary: classification.c3_summary } : (c3Hint ? { c3_summary: c3Hint } : {})),
       };
 
-      const res = await fetch(process.env.BACKEND_PIPELINE_URL || "http://localhost:8000/api/pipeline", {
+      const res = await fetch( "http://localhost:8000/api/pipeline"|| "process.env.BACKEND_PIPELINE_URL", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pipelineBody),
@@ -191,18 +191,94 @@ async function getBotResponse(message) {
 
       const data = await res.json();
 
+      // Check scenario classification for termination reasoning
+      const scenarioClassification = data?.scenario_classification;
+      const isTerminated = scenarioClassification?.decision === "TERMINATE";
+
       // Prefer polished outputs if available; else use generated arguments
       const polished = data?.step4_polisher?.reports;
       const gen = data?.step2_arguments?.arguments;
 
-      const pArg = polished?.Plaintiff_Argument?.final_argument ?? gen?.Plaintiff_Argument ?? "";
-      const dArg = polished?.Defendant_Counterargument?.final_argument ?? gen?.Defendant_Counterargument ?? "";
-      const rArg = polished?.Plaintiff_Rebuttal?.final_argument ?? gen?.Plaintiff_Rebuttal ?? "";
+      // Helper function to extract text from potential JSON strings
+      const extractText = (text) => {
+        if (!text || text === "TERMINATE") return text;
+        
+        // If it's already a plain string, return it
+        if (typeof text === 'string' && !text.trim().startsWith('{')) {
+          return text;
+        }
+        
+        // Try to parse as JSON if it looks like JSON
+        try {
+          const parsed = typeof text === 'string' ? JSON.parse(text) : text;
+          // Extract polished_argument field if it exists
+          return parsed.polished_argument || parsed.final_argument || text;
+        } catch {
+          // If parsing fails, return original text
+          return text;
+        }
+      };
 
-      // If any is TERMINATE, show that explicitly
-      const fmt = (label, text) => (text === "TERMINATE" ? `${label}: TERMINATE (abstained)` : `${label}: ${text}`);
+      let pArg = polished?.Plaintiff_Argument?.final_argument ?? gen?.Plaintiff_Argument ?? "";
+      let dArg = polished?.Defendant_Counterargument?.final_argument ?? gen?.Defendant_Counterargument ?? "";
+      let rArg = polished?.Plaintiff_Rebuttal?.final_argument ?? gen?.Plaintiff_Rebuttal ?? "";
 
-      return `Here is your 3-Ply Legal Arguments\n\n${fmt("Plaintiff's Argument", pArg)}\n\n${fmt("Defendant's Counterargument", dArg)}\n\n${fmt("Plaintiff's Rebuttal", rArg)}`;
+      // Extract clean text from potential JSON responses
+      pArg = extractText(pArg);
+      dArg = extractText(dArg);
+      rArg = extractText(rArg);
+
+      // Build clean ChatGPT-style formatted response
+      let response = "";
+
+      // Header section
+      response += "🏛️  **3-Ply Legal Arguments**\n\n";
+
+      // If terminated, show reasoning first
+      if (isTerminated && scenarioClassification) {
+        const scenario = scenarioClassification.scenario;
+        const overlap = scenarioClassification.overlap || {};
+        const alignment = scenarioClassification.alignment || {};
+
+        response += "⚠️  **Analysis Terminated**\n\n";
+        
+        if (scenario === "NON-ARGUABLE") {
+          response += `**Reason:** The case was classified as NON-ARGUABLE due to insufficient overlap between the current case factors and precedent cases.\n\n`;
+          response += `• Common factors with plaintiff precedent: ${overlap.c1_c2 || 0}\n`;
+          response += `• Common factors with defendant precedent: ${overlap.c1_c3 || 0}\n\n`;
+          response += `The system requires meaningful factor overlap to construct reliable legal arguments. Without sufficient common ground, the analysis cannot proceed.\n\n`;
+        } else if (scenario === "MISMATCHED") {
+          response += `**Reason:** The case was classified as MISMATCHED because the precedent cases don't align with their expected outcomes.\n\n`;
+          if (!alignment.c2_is_plaintiff) {
+            response += `• The plaintiff precedent case should favor the plaintiff but doesn't.\n`;
+          }
+          if (!alignment.c3_is_defendant) {
+            response += `• The defendant precedent case should favor the defendant but doesn't.\n`;
+          }
+          response += `\nThis misalignment prevents the system from generating trustworthy arguments based on precedent.\n\n`;
+        }
+      }
+
+      // Format each argument as a clean section
+      const formatArgument = (icon, role, text) => {
+        let section = "";
+        section += `${icon}  **${role}**\n\n`;
+        
+        if (text === "TERMINATE") {
+          section += "*⛔ TERMINATED (abstained from argument)*\n\n";
+        } else {
+          section += `${text}\n\n`;
+        }
+        
+        return section;
+      };
+
+      // Add each argument
+      response += formatArgument("🧑‍⚖️", "Plaintiff's Argument", pArg);
+      response += formatArgument("🛡️", "Defendant's Counterargument", dArg);
+      response += formatArgument("⚡", "Plaintiff's Rebuttal", rArg);
+
+      return response.trim();
     } catch (err) {
       console.error("Pipeline invocation error:", err);
       return "Sorry, I couldn't complete the legal analysis pipeline. Please try again later.";
